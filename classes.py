@@ -286,7 +286,7 @@ class node_graph():
 class medida():   
     """
     objeto do tipo medida que constitui o plano de medições, tem como atributos
-    @param: instalado 1 medida instalada, 2 PMU instalada, 0 Sem PMU
+    @param: instalado 1 medida instalada, 2 PMU instalada, 0 Sem PMU ()
     @param: tipo 0 injeção, 2 fluxo, 5 MFS_V, 6 MFS_I
     @param: id barra de
     @param: id barra para
@@ -307,12 +307,17 @@ class individuo():
     @param: nPMUs_adicionadas: Numero de PMUs adicionadas ao sistema de medição     
     """
     
-    def __init__(self,plano,FlagPMUV=0):
+    def __init__(self,plano,lista,FlagPMUV=0):
         self.FlagPMUV=FlagPMUV
         self.plano=plano
+        self.lista=lista #Entrada 
         self.nMedidas_adicionadas=0
         self.nPMUs_adicionadas=0
         self.nMCs=0
         self.startPMUS=0#onde começam as PMUS igual ao numero de MFS existentes + MFS candidatas 
+        self.custo=0 #PMU 100 custo medidor 4.5, já tem custo adicional, depois ele complemnta o custo
 
+
+# individuo a fita
+# entregar custo e a quantidade de MCs 
         

@@ -92,7 +92,7 @@ def fatoraH(HT,graph,Oorder,ind):
                         nMFScandidatas=nMFScandidatas+1# se precisou de 1 MFS candidata para a observabilidade só incrementa                       
                     if plano[j].instalado==0: # se precisou de 1 PMU candidata 
                         nPMUscandidatas=nPMUscandidatas+1 # incrementa 
-                        startPMUS
+                        
                         for k in range(startPMUS,len(plano)): # atualiza todas as medidas daquela PMU para MFS
                             if plano[k].de==plano[j].de: # se a medida está na mesma barra
                                plano[k].instalado==2 # muda o status para candidata

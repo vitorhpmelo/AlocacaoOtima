@@ -19,6 +19,7 @@ def ciraindIviduos(lstIndv,ind_i):
         for idx, row in dfDINVI.iterrows():
             med=medida(row["instalado"],row["type"],ind_i[row["de"]],ind_i[row["para"]])
             plano.append(med)
+            #"ID medida"-instalado ou não
         ind=individuo(plano,flagPMU)
         indiviuos.append(ind)
 

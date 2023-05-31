@@ -29,12 +29,22 @@ dfDBAR,dfDBRAN,dfDMED,dfDINVI = read_files(sys)
 
 
 [bars,nbars,pv,pq,ind_i]=creat_bar(dfDBAR)
+
+#
 [ram,nbran]=create_bran(dfDBRAN,ind_i)
 
 graph=create_graph(bars,ram)
 
 
+
 #this part of the code exists for the initial test phase 
+
+# "ID" 
+
+# TXT de entrada com todas as medidas
+# 0 MFS I6-7
+# 1  
+
 
 sort_order = {1: 0, 2: 1, 0: 2}
 
@@ -46,16 +56,19 @@ lstInd.append(dfDINVI)
 
 
 
-individuos=ciraindIviduos(lstInd,ind_i)
+populacao=ciraindIviduos(lstInd,ind_i)
 
 #%%
 
+#
+[HT,Oorder]=montaH(graph,populacao[0])
 
-[HT,Oorder]=montaH(graph,individuos[0])
+
+# ordena H, # fatora H 
+
+[Htri,obs,nMCs,MC]=fatoraH(HT,graph,Oorder,populacao[0])
 
 
-[Htri,obs,nMCs,MC]=fatoraH(HT,graph,Oorder,individuos[0])
-   
 
 # %%
 
