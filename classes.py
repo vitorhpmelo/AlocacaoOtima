@@ -37,7 +37,7 @@ class branch():
         self.limPA=-999
         self.flagLimP=0
     def cykm(self):
-        self.ykm=1/complex(self.r,self.x)
+        self.ykm=1/complex(self.rplano,self.x)
     def twoPortCircuit(self):
         if self.type == 1:
             self.Y[0][0]=self.ykm+self.bsh
@@ -283,12 +283,36 @@ class node_graph():
             return  0  
 
 
-
-
-class medida():
+class medida():   
+    """
+    objeto do tipo medida que constitui o plano de medições, tem como atributos
+    @param: instalado 1 medida instalada, 2 PMU instalada, 0 Sem PMU
+    @param: tipo 0 injeção, 2 fluxo, 5 MFS_V, 6 MFS_I
+    @param: id barra de
+    @param: id barra para
+    """
     def __init__(self,instalado,tipo,de,para):
         self.instalado=instalado
         self.tipo=tipo
         self.de=de
         self.para=para
 
+
+
+class individuo():
+    """
+    Objeto para armazenar os atributos de cada individuo
+    @param: plano: lista de elementos do tipo medida do individuo 
+    @param: nMedidas_adicionadas: Numero de medidas adicionadas ao sistema de medição
+    @param: nPMUs_adicionadas: Numero de PMUs adicionadas ao sistema de medição     
+    """
+    
+    def __init__(self,plano,FlagPMUV=0):
+        self.FlagPMUV=FlagPMUV
+        self.plano=plano
+        self.nMedidas_adicionadas=0
+        self.nPMUs_adicionadas=0
+        self.nMCs=0
+        self.startPMUS=0#onde começam as PMUS igual ao numero de MFS existentes + MFS candidatas 
+
+        

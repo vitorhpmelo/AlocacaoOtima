@@ -1,3 +1,12 @@
+"""
+Código para alocação ótima de medidores no SIN, implemetantação em python
+"""
+
+
+
+
+
+
 #%%
 from classes import *
 from readfiles import *
@@ -7,13 +16,9 @@ from inidiviuos import *
 import numpy as np
 
 
-
-
-
-
-
 #%%
-tolpiv=1e-9
+
+
 
 
 #%%
@@ -29,6 +34,8 @@ dfDBAR,dfDBRAN,dfDMED,dfDINVI = read_files(sys)
 graph=create_graph(bars,ram)
 
 
+#this part of the code exists for the initial test phase 
+
 sort_order = {1: 0, 2: 1, 0: 2}
 
 dfDINVI["sort_order"]=dfDINVI["instalado"].map(sort_order)
@@ -37,12 +44,11 @@ dfDINVI=dfDINVI.sort_values("sort_order")
 lstInd=[]
 lstInd.append(dfDINVI)
 
-#%%
-
 
 
 individuos=ciraindIviduos(lstInd,ind_i)
 
+#%%
 
 
 [HT,Oorder]=montaH(graph,individuos[0])
