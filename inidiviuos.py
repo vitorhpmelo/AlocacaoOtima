@@ -3,25 +3,36 @@ from readfiles import *
 from networkstruc import *
 import numpy as np
 
-def ciraindIviduos(lstIndv,ind_i):
+
+
+
+
+
+
+
+
+
+
+def ciraindIviduos(dfDMEDS,fita):
     """
     Função auxiliar para criar individuos na fase de testes
     dentro dela está a lista de individuos
     """
 
+    sort_order = {1: 0, 2: 1, 0: 2}
 
-
-    indiviuos=[]
-    
-    for dfDINVI in lstIndv:
-        plano=[]
-        flagPMU=0
-        for idx, row in dfDINVI.iterrows():
-            med=medida(row["instalado"],row["type"],ind_i[row["de"]],ind_i[row["para"]])
-            plano.append(med)
-            #"ID medida"-instalado ou não
-        ind=individuo(plano,flagPMU)
-        indiviuos.append(ind)
-
-    return indiviuos
+    DMEDS_indviduo=dfDMEDS.copy()#cria o DMED no individuo
+    DMEDS_indviduo["instalado"]=fita #insere a fita
+    DMEDS_indviduo["instalado_candidatas"]=DMEDS_indviduo["instalado"] # cria a coluna instalado & candidatas
+    barras_c_candidatas=list(set(DMEDS_indviduo[DMEDS_indviduo["instalado"]==1].i_de)) # cria lista de barras com medida ("PMUS")
+    DMEDS_indviduo.loc[(DMEDS_indviduo["de"].isin(barras_c_candidatas))&(DMEDS_indviduo["instalado"]==0),"instalado_candidatas"]=2
+    DMEDS_indviduo["Oorder"]=DMEDS_indviduo.index.to_list()
+    indv=individuo(lista=fita,plano=DMEDS_indviduo) # cria o invidiuo
+    indv.nPMUs_instaladas=len(barras_c_candidatas) # preenche as PMUs instaladas
+    indv.nMFS_instalada=sum(fita) # preenche o numero de MFS instaladas
+    indv.FlagPMUV=sum(DMEDS_indviduo[DMEDS_indviduo["type"]==5].instalado)>0
+    DMEDS_indviduo["sort_order"]=DMEDS_indviduo["instalado_candidatas"].map(sort_order) # ordena o DMED 
+    DMEDS_indviduo=DMEDS_indviduo.sort_values("sort_order", ignore_index=True)# ordena o DMED 
+    indv.plano=DMEDS_indviduo # coloca o DMEDS_individuo
+    return indv
 

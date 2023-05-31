@@ -30,12 +30,22 @@ def read_files(sys):
         print("There is no DMED")
         dfDMED=[]
     try: # if the DMED exists the program reads it, this file is not mandatory for power flow 
-        Dind=pd.read_csv(sys+"/Dindividuo.csv",header=None)
-        Dind.columns=["instalado","type","de","para"]
+        dfDMEDS=pd.read_csv(sys+"/DPMFSE.csv",header=None)
+        dfDMEDS.columns=["instalado","type","de","para"]
+        i_De=[]
+        i_Para=[]
+        for idx,row in dfDMEDS.iterrows():
+            i_De.append((dfDBAR[dfDBAR["id"]==row["de"]].index)[0])
+            try:
+                i_Para.append((dfDBAR[dfDBAR["id"]==row["para"]].index)[0])
+            except:
+                i_Para.append((dfDBAR[dfDBAR["id"]==row["de"]].index)[0])
+        dfDMEDS["i_de"]=i_De
+        dfDMEDS["i_para"]=i_Para
     except:
         print("There is no dindividuo")
         Dind=[]
-    return dfDBAR,dfDBRAN,dfDMED,Dind
+    return dfDBAR,dfDBRAN,dfDMED,dfDMEDS
 
 
 def prt_state(graph):

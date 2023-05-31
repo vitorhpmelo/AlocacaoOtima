@@ -15,6 +15,9 @@ from networkcalc import *
 from inidiviuos import *
 import numpy as np
 
+lambda_param = 2.5  # Mean of the Poisson distribution
+size = 10  # Size of the vector
+
 
 #%%
 
@@ -25,9 +28,9 @@ import numpy as np
 
 sys="IEEE6"
 
-dfDBAR,dfDBRAN,dfDMED,dfDINVI = read_files(sys)
+dfDBAR,dfDBRAN,dfDMED,dfDMEDS = read_files(sys)
 
-
+#%%
 [bars,nbars,pv,pq,ind_i]=creat_bar(dfDBAR)
 
 #
@@ -35,40 +38,35 @@ dfDBAR,dfDBRAN,dfDMED,dfDINVI = read_files(sys)
 
 graph=create_graph(bars,ram)
 
+N=100
 
+## programa do vigliassi vai me fornecer isso daqui
+fitas=[]
+for i in range(N):
+    fitas.append(np.random.binomial(n=1, p=0.3, size= len(dfDMEDS)))
 
-#this part of the code exists for the initial test phase 
-
-# "ID" 
-
-# TXT de entrada com todas as medidas
-# 0 MFS I6-7
-# 1  
-
-
+#%%    
+populacao=[]
 sort_order = {1: 0, 2: 1, 0: 2}
 
-dfDINVI["sort_order"]=dfDINVI["instalado"].map(sort_order)
-dfDINVI=dfDINVI.sort_values("sort_order")
+## avalia o individuo inicial 
 
-lstInd=[]
-lstInd.append(dfDINVI)
+#%%
+HT=montaH(graph,dfDMEDS)
+#%%
 
+## cria individuos e analisa os individuos
+for fita in fitas:
+    indv=ciraindIviduos(dfDMEDS,fita)
+    populacao.append(indv)# ordena o DMED 
 
-
-populacao=ciraindIviduos(lstInd,ind_i)
 
 #%%
 
-#
-[HT,Oorder]=montaH(graph,populacao[0])
+[Htri,obs,nMCs,MC]=fatoraH(HT,graph,populacao[0])
 
-
-# ordena H, # fatora H 
-
-[Htri,obs,nMCs,MC]=fatoraH(HT,graph,Oorder,populacao[0])
-
-
+#%%
+plano=populacao[0].plano
 
 # %%
 

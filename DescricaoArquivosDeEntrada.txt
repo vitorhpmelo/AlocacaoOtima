@@ -23,3 +23,13 @@ r - series resistence (pu)
 x - series reactance (pu)
 bsh - line shunt suceptance (pu)
 tap - tap of transforme (Vfrom/Vto)
+
+
+------------------------------------------------------------------------------------------
+
+DPMFSE.csv -- File with the information of the possible measurements
+
+on - 1 exists 0 non exists
+type - 0 Power Injection ; 2 Power Flow; 5 V_phasor ; 6 I_flow_phasor 
+from - from bus id 
+to - to bus id

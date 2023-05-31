@@ -37,7 +37,7 @@ class branch():
         self.limPA=-999
         self.flagLimP=0
     def cykm(self):
-        self.ykm=1/complex(self.rplano,self.x)
+        self.ykm=1/complex(self.r,self.x)
     def twoPortCircuit(self):
         if self.type == 1:
             self.Y[0][0]=self.ykm+self.bsh
@@ -311,6 +311,8 @@ class individuo():
         self.FlagPMUV=FlagPMUV
         self.plano=plano
         self.lista=lista #Entrada 
+        self.nPMUs_instaladas=0
+        self.nMFS_instalada=0
         self.nMedidas_adicionadas=0
         self.nPMUs_adicionadas=0
         self.nMCs=0
