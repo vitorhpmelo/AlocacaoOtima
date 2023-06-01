@@ -39,21 +39,20 @@ dfDBAR,dfDBRAN,dfDMED,dfDMEDS = read_files(sys)
 graph=create_graph(bars,ram)
 
 N=100
-
+HT=montaH(graph,dfDMEDS)
 ## programa do vigliassi vai me fornecer isso daqui
 fitas=[]
 for i in range(N):
     fitas.append(np.random.binomial(n=1, p=0.3, size= len(dfDMEDS)))
 
+
+fitas[0]=np.array([1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1])
 #%%    
 populacao=[]
 sort_order = {1: 0, 2: 1, 0: 2}
 
 ## avalia o individuo inicial 
 
-#%%
-HT=montaH(graph,dfDMEDS)
-#%%
 
 ## cria individuos e analisa os individuos
 for fita in fitas:
@@ -69,6 +68,3 @@ for fita in fitas:
 plano=populacao[0].plano
 
 # %%
-
-
-
