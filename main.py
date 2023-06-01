@@ -46,7 +46,7 @@ for i in range(N):
     fitas.append(np.random.binomial(n=1, p=0.3, size= len(dfDMEDS)))
 
 
-fitas[0]=np.array([1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1])
+fitas[0]=np.array([0, 0, 0, 1, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0])
 #%%    
 populacao=[]
 sort_order = {1: 0, 2: 1, 0: 2}
@@ -61,8 +61,10 @@ for fita in fitas:
 
 
 #%%
+for indv in populacao:
+    individuo_nc=fatoraH(HT,graph,indv)
 
-[Htri,obs,nMCs,MC]=fatoraH(HT,graph,populacao[0])
+# individuo_nc=fatoraH(HT,graph,populacao[0])
 
 #%%
 plano=populacao[0].plano

@@ -35,5 +35,6 @@ def ciraindIviduos(dfDMEDS,fita):
     DMEDS_indviduo=DMEDS_indviduo.sort_values("sort_order", ignore_index=True)# ordena o DMED 
     indv.plano=DMEDS_indviduo # coloca o DMEDS_individuo
     indv.startPMUS=sum((DMEDS_indviduo["instalado_candidatas"]==2) | (DMEDS_indviduo["instalado_candidatas"]==1)) 
+    indv.startCandidatas=sum(DMEDS_indviduo["instalado_candidatas"]==1)
     return indv
 
