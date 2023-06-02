@@ -3,6 +3,7 @@ from readfiles import *
 from networkstruc import *
 import numpy as np
 
+
 tolpiv=1e-9
 
 
@@ -64,7 +65,7 @@ def montaH(graph,dfDMEDS):
     return HT
 
 
-
+@jit(target_backend='cuda') 
 def fatoraH(HT,graph,ind):
     """
     Função para fatorar a matriz H
@@ -209,7 +210,8 @@ def fatoraH(HT,graph,ind):
         inv_nao_critico=individuo(plano_nc,ind.lista_observavel)
         inv_nao_critico.nMFS_instaladas=ind.nMFS_instaladas
         inv_nao_critico.nPMUs_instaladas=ind.nPMUs_instaladas
-
+    else:
+        return
 
 
 

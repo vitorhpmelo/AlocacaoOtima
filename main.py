@@ -15,6 +15,7 @@ from networkcalc import *
 from inidiviuos import *
 import numpy as np
 
+
 lambda_param = 2.5  # Mean of the Poisson distribution
 size = 10  # Size of the vector
 
@@ -64,9 +65,12 @@ populacao_nc=[]
 
 dTabela={}
 i=0
+   
 for indv in populacao:
-    #esta colocando individuos vazios
-    populacao_nc.append(fatoraH(HT,graph,indv))
+    indvnc=fatoraH(HT,graph,indv)
+    if indvnc is not None:
+        populacao_nc.append(indvnc)
+    
 
 
 # %%
