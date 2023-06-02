@@ -29,7 +29,7 @@ def ciraindIviduos(dfDMEDS,fita):
     DMEDS_indviduo["Oorder"]=DMEDS_indviduo.index.to_list() # ordenação original do do datagrame
     indv=individuo(lista=fita,plano=DMEDS_indviduo) # cria o invidiuo
     indv.nPMUs_instaladas=len(barras_c_candidatas) # preenche as PMUs instaladas
-    indv.nMFS_instalada=sum(fita) # preenche o numero de MFS instaladas
+    indv.nMFS_instaladas=sum(fita) # preenche o numero de MFS instaladas
     indv.FlagPMUV=sum(DMEDS_indviduo[DMEDS_indviduo["type"]==5].instalado)>0 # verifica se tem PMU de tnesão para fatorar até a linha adicional
     DMEDS_indviduo["sort_order"]=DMEDS_indviduo["instalado_candidatas"].map(sort_order) # ordena o DMED 
     DMEDS_indviduo=DMEDS_indviduo.sort_values("sort_order", ignore_index=True)# ordena o DMED 

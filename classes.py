@@ -306,21 +306,21 @@ class individuo():
     @param: nMedidas_adicionadas: Numero de medidas adicionadas ao sistema de medição
     @param: nPMUs_adicionadas: Numero de PMUs adicionadas ao sistema de medição     
     """
-    
+    custoPMU=100
+    custoMFS=4.5
     def __init__(self,plano,lista,FlagPMUV=0):
         self.FlagPMUV=FlagPMUV
         self.plano=plano
         self.lista=lista #Entrada 
-        self.lista_observavel=[]
+        self.lista_observavel=[] #lista saída ()
         self.nPMUs_instaladas=0 #Valor no individuo original
         self.nMFS_instaladas=0#Valor no individuo original
-        self.nMFS_adicionadas=0 # valor para gerar o inividuo modificado
-        self.nPMUs_adicionadas=0 # valor para gerar o inividuo modificado
         self.nMCs=0
         self.startPMUS=0#onde começam as PMUS igual ao numero de MFS existentes + MFS candidatas 
         self.startCandidatas=0#onde começam as PMUS igual ao numero de MFS existentes + MFS candidatas 
         self.custo=0 #PMU 100 custo medidor 4.5, já tem custo adicional, depois ele complemnta o custo
-
+    def calcula_custo(self):
+        self.custo=self.custoPMU*self.nPMUs_instaladas + self.custoMFS*self.nMFS_instaladas
 
 # individuo a fita
 # entregar custo e a quantidade de MCs 

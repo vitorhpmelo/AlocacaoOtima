@@ -49,7 +49,6 @@ for i in range(N):
 fitas[0]=np.array([0, 0, 0, 1, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0])
 #%%    
 populacao=[]
-sort_order = {1: 0, 2: 1, 0: 2}
 
 ## avalia o individuo inicial 
 
@@ -57,16 +56,17 @@ sort_order = {1: 0, 2: 1, 0: 2}
 ## cria individuos e analisa os individuos
 for fita in fitas:
     indv=ciraindIviduos(dfDMEDS,fita)
-    populacao.append(indv)# ordena o DMED 
+    populacao.append(indv)# ordena o DMED
 
 
 #%%
+populacao_nc=[]
+
+dTabela={}
+i=0
 for indv in populacao:
-    individuo_nc=fatoraH(HT,graph,indv)
+    #esta colocando individuos vazios
+    populacao_nc.append(fatoraH(HT,graph,indv))
 
-# individuo_nc=fatoraH(HT,graph,populacao[0])
-
-#%%
-plano=populacao[0].plano
 
 # %%

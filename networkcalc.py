@@ -80,7 +80,9 @@ def fatoraH(HT,graph,ind):
 
 
     nMFScandidatas=0
+    nMFSadicioanadas=0
     nPMUscandidatas=0
+    nPMUSadicionadas=0
 
     plano=ind.plano
     startPMUS=ind.startPMUS#util na hora da permutacao
@@ -130,7 +132,8 @@ def fatoraH(HT,graph,ind):
                     Permutacao[j]=aux # coloca permutacao no vetor de permutacoes
                     ## Depois daqui o i guarda a posicao da medida permutada e o j da medida que estava na posicao anteriormente
                     if plano.iloc[Permutacao[i]].instalado_candidatas==2: #verifica se a medida permutada era candidata
-                        nMFScandidatas=nMFScandidatas+1# se precisou de 1 MFS candidata para a observabilidade só incrementa                       
+                        nMFScandidatas=nMFScandidatas+1# se precisou de 1 MFS candidata para a observabilidade só incrementa        
+                        nMFSadicioanadas=nMFSadicioanadas+1               
                         plano.at[Permutacao[i],"instalado_mod"]=1 # muda o status dela para mod
                         plano.at[Permutacao[i],"instalado_candidatas"]=1
                         if (plano.iloc[Permutacao[i]].type==5) & (flag==0):
@@ -139,10 +142,12 @@ def fatoraH(HT,graph,ind):
                             Hfat[:,[j,startCandidatas]]=Hfat[:,[startCandidatas,j]]
                             aux=Permutacao[startCandidatas]  
                             Permutacao[startCandidatas]=Permutacao[j] # coloca ela no fim do arquivo de candidatas
-                            Permutacao[j]=aux # coloca a primeira PMU candidata pro lugar dela
-                            startCandidatas=startCandidatas+1 # incrementa o identificador de onde começam as PMUS
+                            Permutacao[j]=aux # coloca a primeira PMU candidata pro lugar dela    
+                        startCandidatas=startCandidatas+1 # incrementa o identificador de onde começam as MFS_candidatas
                     elif plano.iloc[Permutacao[i]].instalado_candidatas==0: # se precisou de 1 PMU candidata 
                         nPMUscandidatas=nPMUscandidatas+1 # incrementa 
+                        nMFSadicioanadas=nMFSadicioanadas+1
+                        nPMUSadicionadas=nPMUSadicionadas+1
                         plano.at[Permutacao[i],"instalado_mod"]=1 #muda o status das medidas
                         plano.at[Permutacao[i],"instalado_candidatas"]=1
                         if (plano.iloc[Permutacao[i]].type==5) & (flag==0):
@@ -158,6 +163,8 @@ def fatoraH(HT,graph,ind):
                             Permutacao[startPMUS]=Permutacao[j] # coloca ela no fim do arquivo de candidatas
                             Permutacao[j]=aux # coloca a primeira PMU candidata pro lugar dela
                             startPMUS=startPMUS+1 # incrementa o identificador de onde começam as PMUS
+                        startCandidatas=startCandidatas+1 # incrementa o identificador de onde começam as MFS_candidatas
+                        startPMUS=startPMUS+1 # incrementa o identificador de onde começam as PMUS
                         offset=startPMUS
                         for k in range(offset,len(plano)): # atualiza todas as medidas daquela PMU para MFS
                             if plano.iloc[Permutacao[k]].i_de==plano.iloc[Permutacao[i]].i_de: # se a medida está na mesma barra
@@ -190,8 +197,9 @@ def fatoraH(HT,graph,ind):
 
 
     ind.nMCs=nMCs
-    ind.nMedidas_adicionadas=nMFScandidatas
-    ind.nMedidas_adicionadas=nPMUscandidatas
+    ind.nPMUs_instaladas=ind.nPMUs_instaladas+nPMUSadicionadas
+    ind.nMFS_instaladas=ind.nMFS_instaladas+nMFSadicioanadas
+    ind.calcula_custo()
 
     ind.lista_observavel=plano.iloc[plano["Oorder"].sort_values().index]["instalado_mod"].array
 
@@ -201,8 +209,7 @@ def fatoraH(HT,graph,ind):
         inv_nao_critico=individuo(plano_nc,ind.lista_observavel)
         inv_nao_critico.nMFS_instaladas=ind.nMFS_instaladas
         inv_nao_critico.nPMUs_instaladas=ind.nPMUs_instaladas
-        inv_nao_critico.nMFS_adicionadas=ind.nMFS_adicionadas
-        inv_nao_critico.nPMUs_adicionadas=ind.nPMUs_adicionadas
+
 
 
 
@@ -211,6 +218,8 @@ def fatoraH(HT,graph,ind):
 
     Hinstaladas_n=np.zeros((len(graph)+1,1))
 
+
+    ## alterar, remover as instaladas da jacobiana
     m=0
     for MC in varMC:
         i=MC    
@@ -223,10 +232,12 @@ def fatoraH(HT,graph,ind):
                     plano_nc.at[Permutacao_nc[j],"instalado_mod"]=1
                     inv_nao_critico.nMFS_instaladas=inv_nao_critico.nMFS_instaladas+1
                     Hinstaladas_n=np.concatenate((Hinstaladas_n,np.array(Hfat[:,j]).reshape(-1,1)),axis=1)
+                    break
                 elif (Hfat[i][j]>0):
                     plano_nc.at[Permutacao_nc[j],"instalado_candidatas"]=1
                     plano_nc.at[Permutacao_nc[j],"instalado_mod"]=1
                     inv_nao_critico.nPMUs_instaladas=inv_nao_critico.nPMUs_instaladas+1
+                    inv_nao_critico.nMFS_instaladas=inv_nao_critico.nMFS_instaladas+1
                     Hinstaladas_n=np.concatenate((Hinstaladas_n,np.array(Hfat[:,j]).reshape(-1,1)),axis=1)
                     aux=Permutacao[startPMUS]  
                     Permutacao[startPMUS]=Permutacao[j] # coloca ela no fim do arquivo de candidatas
@@ -242,23 +253,13 @@ def fatoraH(HT,graph,ind):
                             Permutacao[startPMUS]=Permutacao[k] # coloca ela no fim do arquivo de candidatas
                             Permutacao[k]=aux # coloca a primeira PMU candidata pro lugar dela
                             startPMUS=startPMUS+1 # incrementa o identificador de onde começam as PMUS
+                    break
                 m=m+1
     if nMCs>0:
         inv_nao_critico.lista_observavel=plano_nc.iloc[plano_nc["Oorder"].sort_values().index]["instalado_mod"].array
+        inv_nao_critico.calcula_custo()
     else:
         inv_nao_critico=[]
 
     return inv_nao_critico
 
-
-
-
-
-
-
-
-        
-
-
-
-    return Hfat,obs,nMCs,lstMC
