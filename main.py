@@ -14,6 +14,8 @@ from networkstruc import *
 from networkcalc import *
 from inidiviuos import *
 import numpy as np
+from multiprocessing import Pool
+import time
 
 
 lambda_param = 2.5  # Mean of the Poisson distribution
@@ -66,11 +68,30 @@ populacao_nc=[]
 dTabela={}
 i=0
    
-for indv in populacao:
-    indvnc=fatoraH(HT,graph,indv)
-    if indvnc is not None:
-        populacao_nc.append(indvnc)
-    
+# start_time = time.time()
+
+# for indv in populacao:
+#     indvnc=fatoraH(HT,graph,indv)
+#     if indvnc is not None:
+#         populacao_nc.append(indvnc)
+
+# end_time = time.time()
+
+# execution_time = end_time - start_time
+# print(execution_time)
+#%%
+start_time = time.time()
+num_workers=8  
+pool = Pool(processes=num_workers)
+pool = Pool(processes=num_workers)
+
+results = pool.starmap(fatoraH, [(HT,graph,indv) for indv in populacao])
 
 
+pool.close()
+pool.join()
+
+end_time = time.time()
+execution_time = end_time - start_time
+print(execution_time)
 # %%
