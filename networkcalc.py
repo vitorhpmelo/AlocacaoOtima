@@ -44,12 +44,12 @@ def montaH(graph,dfDMEDS):
 
     
     for idx,med in dfDMEDS.iterrows():
-        # if the measurement is a Flow
-        if med.type==2:
+        # if the measurement is a Flow or a current fwo
+        if med.type==2| (med.type==6):
             HT[med.i_de][i]=1
             HT[med.i_para][i]=-1
         # if the measurement is a injection 
-        elif (med.type==0) | (med.type==6):
+        elif (med.type==0):
             k=med.i_de
             m=0
             for item in graph[k].ladjk:
@@ -61,7 +61,7 @@ def montaH(graph,dfDMEDS):
             HT[k][i]=m
         elif med.type==5:
             HT[med.i_de][i]=1
-            HT[med.i_de][i]=-1
+            HT[-1][i]=-1
         i=i+1
         
     return HT
