@@ -89,7 +89,7 @@ def fatoraH(HT,graph,ind):
     plano=ind.plano
     startPMUS=ind.startPMUS#util na hora da permutacao
     startCandidatas=ind.startCandidatas#util na hora da permutacao
-
+    tollfill=1e-9
     obs=1
 
     Hfat=HT.copy()
@@ -179,12 +179,21 @@ def fatoraH(HT,graph,ind):
                             #muda o status de todas as outras medidas na mesma barra para candidata
                             #reordena a Ht e o plano para elas virem primeiro
                     break
+        Hfat[i,:]=Hfat[i,:]/Hfat[i][i]
         for j in range(i+1,len(graph)):
-            if np.abs(Hfat[j][i])>tolpiv:
-                Hfat[j,:]=Hfat[j,:]-(Hfat[j][i]/Hfat[i][i])*Hfat[i,:]  
+                if np.abs(Hfat[j][i])>tollfill:
+                    Hfat[j,:]=Hfat[j,:]-(Hfat[j][i])*Hfat[i,:]  
+                else:  
+                    Hfat[j][i]=0  
 
 
-    
+    for i in range(1,(len(graph)-1+flag)):
+        for j in range(0,i):
+            if np.abs(Hfat[j][i])>tollfill:
+                Hfat[j,:] = Hfat[j,:]-Hfat[j,i]*Hfat[i,:]
+            else:
+                Hfat[j][i]=0
+
 
     i=0
     lstMC=[]
