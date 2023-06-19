@@ -29,7 +29,7 @@ size = 10  # Size of the vector
 
 #%%
 
-sys="IEEE6"
+sys="IEEE118"
 
 dfDBAR,dfDBRAN,dfDMED,dfDMEDS = read_files(sys)
 
