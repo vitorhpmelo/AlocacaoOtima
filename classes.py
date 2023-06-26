@@ -321,6 +321,8 @@ class individuo():
         self.custo=0 #PMU 100 custo medidor 4.5, já tem custo adicional, depois ele complemnta o custo
     def calcula_custo(self):
         self.custo=self.custoPMU*self.nPMUs_instaladas + self.custoMFS*self.nMFS_instaladas
+    def preenche_existentes(self):
+        self.plano["existentes"]=0 
 
 # individuo a fita
 # entregar custo e a quantidade de MCs 

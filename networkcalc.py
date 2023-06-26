@@ -195,16 +195,76 @@ def fatoraH(HT,graph,ind):
                 Hfat[j][i]=0
 
 
+
+
+    plano["order_after_observa"]=0
+    #desinstala medidas
+
+
+
+    ## verifica PMUs instaladas no conjunto básico
+    PMUsInstaladas=list(set(plano.iloc[Permutacao[0:len(graph)-1+flag]].i_de.tolist()))
+
+    #
+    mask1=plano.iloc[Permutacao[len(graph)-1+flag:]].i_de.isin(PMUsInstaladas) 
+    mask1=(~(plano.de !=-999) )| mask1
+
+    plano.loc[mask1,"instalado_candidatas"]=2
+    plano.loc[mask1,"instalado_mod"]=0 #para todas
+   
+    ##desinstala todas as medidas depois da observabilidade
+
+    mask2=~plano.iloc[Permutacao[len(graph)-1+flag:]].i_de.isin(PMUsInstaladas) 
+    mask2=(~(plano.de !=-999) )| mask2
+
+    plano.loc[mask2,"instalado_candidatas"]=0
+    plano.loc[mask2,"instalado_mod"]=0 #para todas
+
+    #ordem depois da observabilidade
+    plano.loc[Permutacao,"order_after_observa"]=list(range(len(Permutacao)))
+
+    plano=plano.sort_values("order_after_observa")
+
+    sort_order = {1: 0, 2: 1, 0: 2}
+    plano["sort_order_observabilidade"]=plano["instalado_candidatas"].map(sort_order) # ordena o DMED 
+    plano=plano.sort_values("sort_order_observabilidade",kind="stable")# ordena o DMED 
+
+    # aqui está errado o vetor permutacao depois da observabilidade 
+    Permutacao_depois_Observabilidade=plano["order_after_observa"].tolist()
+
+    Hfat2=reorder_columns(Hfat,Permutacao_depois_Observabilidade)
+    Permutacao=np.array(Permutacao)
+    Permutacao_depois_Observabilidade=Permutacao[Permutacao_depois_Observabilidade]
+
+
+
+
+
+
+
+
+    
+
+    ncadidatas=len(plano[plano["instalado_candidatas"]==2])
+    nPMUscandidatas=len(plano[plano["instalado_candidatas"]==0])
+    
+    startCandidatas=len(plano)-ncadidatas-nPMUscandidatas
+    startPMUS=len(plano)-ncadidatas
+
+
+
     i=0
     lstMC=[]
     varMC=[]
     nMCs=0
     # ordernar a base da matriz pelas instaladas 
     for i in range(0,len(graph)-1+flag):
-        if np.sum(np.abs(Hfat[i][0:startCandidatas])>tolpiv)<=1:
-            lstMC.append(plano.iloc[Permutacao[i]]["Oorder"])
+        if np.sum(np.abs(Hfat2[i][0:startCandidatas])>tolpiv)<=1:
+            lstMC.append(plano.iloc[Permutacao_depois_Observabilidade[i]]["Oorder"])
             varMC.append(i)
             nMCs=nMCs+1
+
+
 
 
     ind.nMCs=nMCs
@@ -225,13 +285,15 @@ def fatoraH(HT,graph,ind):
 
 
 
-    Permutacao_nc=Permutacao.copy()
+    Permutacao_nc=Permutacao_depois_Observabilidade.copy()
 
 
     Hinstaladas_n=np.zeros((len(graph)+1,1))
 
 
-    ## alterar, remover as instaladas da jacobiana
+
+
+    
     m=0
     for MC in varMC:
         i=MC    
@@ -239,31 +301,31 @@ def fatoraH(HT,graph,ind):
             pass
         else:
             for j in range(startCandidatas,len(plano_nc)):
-                if (Hfat[i][j]>0) & (j<startPMUS):
+                if (Hfat2[i][j]>0) & (j<startPMUS):
                     plano_nc.at[Permutacao_nc[j],"instalado_candidatas"]=1
                     plano_nc.at[Permutacao_nc[j],"instalado_mod"]=1
                     inv_nao_critico.nMFS_instaladas=inv_nao_critico.nMFS_instaladas+1
                     Hinstaladas_n=np.concatenate((Hinstaladas_n,np.array(Hfat[:,j]).reshape(-1,1)),axis=1)
                     break
-                elif (Hfat[i][j]>0):
+                elif (Hfat2[i][j]>0):
                     plano_nc.at[Permutacao_nc[j],"instalado_candidatas"]=1
                     plano_nc.at[Permutacao_nc[j],"instalado_mod"]=1
                     inv_nao_critico.nPMUs_instaladas=inv_nao_critico.nPMUs_instaladas+1
                     inv_nao_critico.nMFS_instaladas=inv_nao_critico.nMFS_instaladas+1
-                    Hinstaladas_n=np.concatenate((Hinstaladas_n,np.array(Hfat[:,j]).reshape(-1,1)),axis=1)
-                    aux=Permutacao[startPMUS]  
-                    Permutacao[startPMUS]=Permutacao[j] # coloca ela no fim do arquivo de candidatas
-                    Permutacao[j]=aux # coloca a primeira PMU candidata pro lugar dela
-                    Hfat[:,[j,startPMUS]]=Hfat[:,[startPMUS,j]] # volta a medida do topo das candidatas para as candidatas
+                    Hinstaladas_n=np.concatenate((Hinstaladas_n,np.array(Hfat2[:,j]).reshape(-1,1)),axis=1)
+                    aux=Permutacao_depois_Observabilidade[startPMUS]  
+                    Permutacao_depois_Observabilidade[startPMUS]=Permutacao_depois_Observabilidade[j] # coloca ela no fim do arquivo de candidatas
+                    Permutacao_depois_Observabilidade[j]=aux # coloca a primeira PMU candidata pro lugar dela
+                    Hfat2[:,[j,startPMUS]]=Hfat2[:,[startPMUS,j]] # volta a medida do topo das candidatas para as candidatas
                     startPMUS=startPMUS+1 # incrementa o identificador de onde começam as PMUS
                     offset=startPMUS
                     for k in range(offset,len(plano_nc)): # atualiza todas as medidas daquela PMU para MFS
                         if plano_nc.iloc[Permutacao[k]].i_de==plano_nc.iloc[Permutacao[i]].i_de: # se a medida está na mesma barra
                             plano_nc.at[Permutacao[k],"instalado_candidatas"]=2 # muda o status para candidata
-                            Hfat[:,[k,startPMUS]]=Hfat[:,[startPMUS,k]]# altera a ordem da Jacobiana
-                            aux=Permutacao[startPMUS]  
-                            Permutacao[startPMUS]=Permutacao[k] # coloca ela no fim do arquivo de candidatas
-                            Permutacao[k]=aux # coloca a primeira PMU candidata pro lugar dela
+                            Hfat2[:,[k,startPMUS]]=Hfat2[:,[startPMUS,k]]# altera a ordem da Jacobiana
+                            aux=Permutacao_depois_Observabilidade[startPMUS]  
+                            Permutacao_depois_Observabilidade[startPMUS]=Permutacao_depois_Observabilidade[k] # coloca ela no fim do arquivo de candidatas
+                            Permutacao_depois_Observabilidade[k]=aux # coloca a primeira PMU candidata pro lugar dela
                             startPMUS=startPMUS+1 # incrementa o identificador de onde começam as PMUS
                     break
                 m=m+1
