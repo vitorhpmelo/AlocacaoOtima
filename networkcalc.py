@@ -215,7 +215,7 @@ def fatoraH(HT,graph,ind):
     plano.loc[mask1,"instalado_candidatas"]=2 # todas essas medidas são candidatas
     plano.loc[mask1,"instalado_mod"]=0 #e não estão instaladas
 
-    ind.nPMUs_instaladas=PMUsInstaladas #novo número de PMUs instaladas
+    ind.nPMUs_instaladas=len(PMUsInstaladas) #novo número de PMUs instaladas
     
    
     
