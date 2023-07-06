@@ -107,7 +107,7 @@ def fatoraH(HT,graph,ind):
     # ele traduz a ordem das colunas com a ordem do plano data frame
     for  i in range(len(graph)-1+flag):
      # Verifica se o pivo é nulo
-        if np.abs(Hfat[i][i]) >tolpiv:
+        if np.abs(Hfat[i][i]) >tolpiv: #checar depois
             # se o pivo é nulo verifica se a medida é instalada
             if plano.iloc[Permutacao[i]].instalado_candidatas!=1:
                 if plano.iloc[Permutacao[i]].instalado_candidatas==2: # senão for ele instala ela se for candidata
@@ -140,7 +140,7 @@ def fatoraH(HT,graph,ind):
                     if plano.iloc[Permutacao[i]].instalado_candidatas==2: #verifica se a medida permutada era candidata
                         plano.at[Permutacao[i],"instalado_mod"]=1 # muda o status dela para mod
                         plano.at[Permutacao[i],"instalado_candidatas"]=1 #instala a medida
-                        
+
 
                         ## preciso do contrário 
                         if (plano.iloc[Permutacao[i]].type==5) & (flag==0): #verifica se ela há pmus no plano e se ela for pmus ele coloca a flag para 1
@@ -148,6 +148,13 @@ def fatoraH(HT,graph,ind):
                         if plano.iloc[Permutacao[j]].instalado_candidatas==1: #coloca a medida que foi retirada para o final das instaladas
                             permutaMedida(Hfat,Permutacao,j,startCandidatas)
                         startCandidatas=startCandidatas+1 # incrementa o identificador de onde começam as MFS_candidatas
+                        mask=(plano.id_MFS==plano.iloc[Permutacao[i]].id_MFS)&(plano.instalado==0)
+                        instalar=int(Permutacao[Permutacao==plano[mask].index[0]])                        
+                        permutaMedida(Hfat,Permutacao,instalar,startCandidatas)
+                        plano.at[Permutacao[startCandidatas],"instalado_mod"]=1 # muda o status dela para mod
+                        plano.at[Permutacao[startCandidatas],"instalado_candidatas"]=1 #instala a medida
+                        startCandidatas=startCandidatas+1 # incrementa o identificador de onde começam as MFS_candidatas
+                        ##DEVE SER ISSO DAQUI, AGORA FALTA FAZER PARA PMU CANDIDATA
                     elif plano.iloc[Permutacao[i]].instalado_candidatas==0: # se precisou de 1 PMU candidata 
                         plano.at[Permutacao[i],"instalado_mod"]=1 #muda o status das medidas
                         plano.at[Permutacao[i],"instalado_candidatas"]=1
