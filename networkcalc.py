@@ -101,7 +101,7 @@ def fatoraH(HT,graph,ind):
     Hfat=reorder_columns(Hfat,plano.Oorder_DPFMSE) #reordena a matriz jacobiana de acrodo com um vetor permutacao de colunas
 
     flag=ind.FlagPMUV #se existe PMUs
-    Permutacao=list(plano.index) # vetor de permutacoes tem a mesma ordem da Htriang final e em suas poiscoes tem a posicao da medida no plano
+    Permutacao=np.array(list(plano.index),dtype=int) # vetor de permutacoes tem a mesma ordem da Htriang final e em suas poiscoes tem a posicao da medida no plano
     plano["instalado_mod"]=plano["instalado"]
     # O vetor Permutacao permite acessar de acordo com a coluna i, a medida referente no plano original
     # ele traduz a ordem das colunas com a ordem do plano data frame
@@ -125,31 +125,28 @@ def fatoraH(HT,graph,ind):
                     for k in range(offset,len(plano)): # atualiza todas as medidas daquela PMU para MFS candidatas
                         if plano.iloc[Permutacao[k]].i_de==plano.iloc[Permutacao[i]].i_de: # se a medida está na mesma barra
                             plano.at[Permutacao[k],"instalado_candidatas"]=2 # muda o status para candidata
-                            Hfat[:,[k,startPMUS]]=Hfat[:,[startPMUS,k]]# altera a ordem da Jacobiana
-                            aux=Permutacao[startPMUS]  
-                            Permutacao[startPMUS]=Permutacao[k] # coloca ela no fim do arquivo de candidatas
-                            Permutacao[k]=aux # coloca a primeira PMU candidata pro lugar dela
+                            permutaMedida(Hfat,Permutacao,k,startPMUS)
+
                         startPMUS=startPMUS+1 # incrementa o identificador de onde começam as PMUS
                     startCandidatas=startCandidatas+1
         if np.abs(Hfat[i][i])<tolpiv:
             # se for ele procura a próxima medida com pivo não nulo
             for j in range(i+1,len(plano)):
-                if np.abs(Hfat[i][j])>tolpiv:
-                    Hfat[:,[j,i]]=Hfat[:,[i,j]] # quando ele contra a primeira medida com pivo não nulo e faz a troca i por j
-                    aux=Permutacao[i] # coloca permutacao no vetor de permutacoes
-                    Permutacao[i]=Permutacao[j] # coloca permutacao no vetor de permutacoes
-                    Permutacao[j]=aux # coloca permutacao no vetor de permutacoes
+
+                if np.abs(Hfat[i][j])>tolpiv: # se o pivo é não nulo
+                    
+                    permutaMedida(Hfat,Permutacao,i,j) # permuta a medida i com j, j dá a informcao
                     ## Depois daqui o i guarda a posicao da medida permutada e o j da medida que estava na posicao anteriormente
                     if plano.iloc[Permutacao[i]].instalado_candidatas==2: #verifica se a medida permutada era candidata
                         plano.at[Permutacao[i],"instalado_mod"]=1 # muda o status dela para mod
                         plano.at[Permutacao[i],"instalado_candidatas"]=1 #instala a medida
+                        
+
+                        ## preciso do contrário 
                         if (plano.iloc[Permutacao[i]].type==5) & (flag==0): #verifica se ela há pmus no plano e se ela for pmus ele coloca a flag para 1
                             flag=1
                         if plano.iloc[Permutacao[j]].instalado_candidatas==1: #coloca a medida que foi retirada para o final das instaladas
-                            Hfat[:,[j,startCandidatas]]=Hfat[:,[startCandidatas,j]]
-                            aux=Permutacao[startCandidatas]  
-                            Permutacao[startCandidatas]=Permutacao[j] # coloca ela no fim do arquivo de candidatas
-                            Permutacao[j]=aux # coloca a primeira PMU candidata pro lugar dela    
+                            permutaMedida(Hfat,Permutacao,j,startCandidatas)
                         startCandidatas=startCandidatas+1 # incrementa o identificador de onde começam as MFS_candidatas
                     elif plano.iloc[Permutacao[i]].instalado_candidatas==0: # se precisou de 1 PMU candidata 
                         plano.at[Permutacao[i],"instalado_mod"]=1 #muda o status das medidas
@@ -157,15 +154,9 @@ def fatoraH(HT,graph,ind):
                         if (plano.iloc[Permutacao[i]].type==5) & (flag==0):
                             flag=1
                         if plano.iloc[Permutacao[j]].instalado_candidatas==1:
-                            Hfat[:,[j,startCandidatas]]=Hfat[:,[startCandidatas,j]] # volta a medida para o topo das candidatas
-                            aux=Permutacao[startCandidatas]  
-                            Permutacao[startCandidatas]=Permutacao[j] # coloca ela no fim do arquivo de candidatas
-                            Permutacao[j]=aux # coloca a primeira PMU candidata pro lugar dela
+                            permutaMedida(Hfat,Permutacao,j,startCandidatas)
                             startCandidatas=startCandidatas+1 # incrementa o identificador de onde começam as PMUS
-                            Hfat[:,[j,startPMUS]]=Hfat[:,[startPMUS,j]] # volta a medida do topo das candidatas para as candidatas
-                            aux=Permutacao[startPMUS]  
-                            Permutacao[startPMUS]=Permutacao[j] # coloca ela no fim do arquivo de candidatas
-                            Permutacao[j]=aux # coloca a primeira PMU candidata pro lugar dela
+                            permutaMedida(Hfat,Permutacao,j,startPMUS)
                             startPMUS=startPMUS+1 # incrementa o identificador de onde começam as PMUS
                         startCandidatas=startCandidatas+1 # incrementa o identificador de onde começam as MFS_candidatas
                         startPMUS=startPMUS+1 # incrementa o identificador de onde começam as PMUS
@@ -173,10 +164,7 @@ def fatoraH(HT,graph,ind):
                         for k in range(offset,len(plano)): # atualiza todas as medidas daquela PMU para MFS
                             if plano.iloc[Permutacao[k]].i_de==plano.iloc[Permutacao[i]].i_de: # se a medida está na mesma barra
                                plano.at[Permutacao[k],"instalado_candidatas"]=2 # muda o status para candidata
-                               Hfat[:,[k,startPMUS]]=Hfat[:,[startPMUS,k]]# altera a ordem da Jacobiana
-                               aux=Permutacao[startPMUS]  
-                               Permutacao[startPMUS]=Permutacao[k] # coloca ela no fim do arquivo de candidatas
-                               Permutacao[k]=aux # coloca a primeira PMU candidata pro lugar dela
+                               permutaMedida(Hfat,Permutacao,k,startPMUS)
                                startPMUS=startPMUS+1 # incrementa o identificador de onde começam as PMUS
                             #muda o status de todas as outras medidas na mesma barra para candidata
                             #reordena a Ht e o plano para elas virem primeiro
@@ -323,19 +311,13 @@ def fatoraH(HT,graph,ind):
                     inv_nao_critico.nPMUs_instaladas=inv_nao_critico.nPMUs_instaladas+1
                     inv_nao_critico.nMFS_instaladas=inv_nao_critico.nMFS_instaladas+1
                     Hinstaladas_n=np.concatenate((Hinstaladas_n,np.array(Hfat2[:,j]).reshape(-1,1)),axis=1)
-                    aux=Permutacao_nc[startPMUS]  
-                    Permutacao_nc[startPMUS]=Permutacao_nc[j] # coloca ela no fim do arquivo de candidatas
-                    Permutacao_nc[j]=aux # coloca a primeira PMU candidata pro lugar dela
-                    Hfat2[:,[j,startPMUS]]=Hfat2[:,[startPMUS,j]] # volta a medida do topo das candidatas para as candidatas
+                    permutaMedida(Hfat2,Permutacao_nc,j,startPMUS)
                     startPMUS=startPMUS+1 # incrementa o identificador de onde começam as PMUS
                     offset=startPMUS
                     for k in range(offset,len(plano_nc)): # atualiza todas as medidas daquela PMU para MFS
                         if plano_nc.iloc[Permutacao_nc[k]].i_de==plano_nc.iloc[Permutacao_nc[i]].i_de: # se a medida está na mesma barra
                             plano_nc.at[Permutacao_nc[k],"instalado_candidatas"]=2 # muda o status para candidata
-                            Hfat2[:,[k,startPMUS]]=Hfat2[:,[startPMUS,k]]# altera a ordem da Jacobiana
-                            aux=Permutacao_nc[startPMUS]  
-                            Permutacao_nc[startPMUS]=Permutacao_nc[k] # coloca ela no fim do arquivo de candidatas
-                            Permutacao_nc[k]=aux # coloca a primeira PMU candidata pro lugar dela
+                            permutaMedida(Hfat2,Permutacao_nc,k,startPMUS)
                             startPMUS=startPMUS+1 # incrementa o identificador de onde começam as PMUS
                     break
                 m=m+1
@@ -347,3 +329,14 @@ def fatoraH(HT,graph,ind):
 
     return inv_nao_critico
 
+
+
+def permutaMedida(Hfat,Permutacao,x,y):
+    """
+    Troca posicao de x com y na matriz e no vetor 
+    """
+    
+    Hfat[:,[x,y]]=Hfat[:,[y,x]]# altera a ordem da Jacobiana
+    aux=Permutacao[y]  
+    Permutacao[y]=Permutacao[x] # coloca ela no fim do arquivo de candidatas
+    Permutacao[x]=aux # coloca a primeira PMU candidata pro lugar dela
