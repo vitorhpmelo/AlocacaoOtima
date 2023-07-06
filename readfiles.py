@@ -31,7 +31,7 @@ def read_files(sys):
         dfDMED=[]
     try: # if the DMED exists the program reads it, this file is not mandatory for power flow 
         dfDMEDS=pd.read_csv(sys+"/DPMFSE.csv",header=None)
-        dfDMEDS.columns=["instalado","type","de","para"]
+        dfDMEDS.columns=["existente","type","de","para","id_MFS"]
         i_De=[]
         i_Para=[]
         for idx,row in dfDMEDS.iterrows():

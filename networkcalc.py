@@ -98,7 +98,7 @@ def fatoraH(HT,graph,ind):
     # plano.Oorder.array tem a ordem original das medidas colocando instaldas primeiro , primeiro as medidas instaladas, depois as medidas candidatas e depois as PMUs candidatas 
     # o plano já está pré-ordenado só a matriz q está na ordem original
 
-    Hfat=reorder_columns(Hfat,plano.Oorder.array) #reordena a matriz jacobiana de acrodo com um vetor permutacao de colunas
+    Hfat=reorder_columns(Hfat,plano.Oorder_DPFMSE) #reordena a matriz jacobiana de acrodo com um vetor permutacao de colunas
 
     flag=ind.FlagPMUV #se existe PMUs
     Permutacao=list(plano.index) # vetor de permutacoes tem a mesma ordem da Htriang final e em suas poiscoes tem a posicao da medida no plano
@@ -270,7 +270,7 @@ def fatoraH(HT,graph,ind):
     # ordernar a base da matriz pelas instaladas 
     for i in range(0,len(graph)-1+flag):
         if np.sum(np.abs(Hfat2[i][0:startCandidatas])>tolpiv)<=1:
-            lstMC.append(plano.iloc[Permutacao_depois_Observabilidade[i]]["Oorder"])
+            lstMC.append(plano.iloc[Permutacao_depois_Observabilidade[i]]["Oorder_DPFMSE"])
             varMC.append(i)
             nMCs=nMCs+1
 
@@ -282,7 +282,7 @@ def fatoraH(HT,graph,ind):
     ind.nMFS_instaladas=ind.nMFS_instaladas+nMFSadicioanadas
     ind.calcula_custo()
 
-    ind.lista_observavel=plano.iloc[plano["Oorder"].sort_values().index]["instalado_mod"].array
+    ind.lista_observavel=plano.iloc[plano["Oorder_DPFMSE"].sort_values().index]["instalado_mod"].array
 
     #rotina para gerar plano não critico
     if nMCs>0:
@@ -340,7 +340,7 @@ def fatoraH(HT,graph,ind):
                     break
                 m=m+1
     if nMCs>0:
-        inv_nao_critico.lista_observavel=plano_nc.iloc[plano_nc["Oorder"].sort_values().index]["instalado_mod"].array
+        inv_nao_critico.lista_observavel=plano_nc.iloc[plano_nc["Oorder_DPFMSE"].sort_values().index]["instalado_mod"].array
         inv_nao_critico.calcula_custo()
     else:
         inv_nao_critico=[]
