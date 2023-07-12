@@ -42,10 +42,9 @@ HT=montaH(graph,dfDMEDS)
 ## programa do vigliassi vai me fornecer isso daqui
 fitas=[]
 for i in range(N):
-    fitas.append(np.random.binomial(n=1, p=0.3, size= len(dfDMEDS)))
+    fitas.append(np.random.binomial(n=1, p=0.7, size= len(dfDMEDS)))
 
 #%%
-fitas[0]=np.array([1, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0])
 #%%    
 populacao=[]
 
@@ -75,19 +74,5 @@ end_time = time.time()
 
 execution_time = end_time - start_time
 print(execution_time)
+
 #%%
-# start_time = time.time()
-# num_workers=8  
-# pool = Pool(processes=num_workers)
-# pool = Pool(processes=num_workers)
-
-# results = pool.starmap(fatoraH, [(HT,graph,indv) for indv in populacao])
-
-
-# pool.close()
-# pool.join()
-
-# end_time = time.time()
-# execution_time = end_time - start_time
-# print(execution_time)
-# %%

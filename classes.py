@@ -320,6 +320,9 @@ class individuo():
         self.startCandidatas=0#onde começam as PMUS igual ao numero de MFS existentes + MFS candidatas 
         self.custo=0 #PMU 100 custo medidor 4.5, já tem custo adicional, depois ele complemnta o custo
     def calcula_custo(self):
+        self.nMFS_instaladas=sum(self.plano["instalado_mod"])
+        mask=self.plano["instalado_mod"]==1
+        self.nPMUs_instaladas=len(set(self.plano[mask].i_de.tolist()))
         self.custo=self.custoPMU*self.nPMUs_instaladas + self.custoMFS*self.nMFS_instaladas
     def preenche_existentes(self):
         self.plano["existentes"]=0 

@@ -33,7 +33,7 @@ def ciraindIviduos(dfDMEDS,fita):
 
 
     # força as medidas existentes
-    DMEDS_indviduo["instalado"]=(DMEDS_indviduo["fita"]) | (DMEDS_indviduo["existente"]) # força as medidas existentes coisas existentes 
+    DMEDS_indviduo["instalado"]=(DMEDS_indviduo["instalado_fita"]) | (DMEDS_indviduo["existente"]) # força as medidas existentes coisas existentes 
     
     
     DMEDS_indviduo["instalado_candidatas"]=DMEDS_indviduo["instalado"] # cria a coluna instalado & candidatas

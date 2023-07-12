@@ -109,34 +109,49 @@ def fatoraH(HT,graph,ind):
         if np.abs(Hfat[i][i]) >tolpiv: #checar depois
             # se o pivo é nulo verifica se a medida é instalada
             if plano.iloc[Permutacao[i]].instalado_candidatas!=1:
+                #Verifica se o pivo é de uma medida candidata
                 if plano.iloc[Permutacao[i]].instalado_candidatas==2: # senão for ele instala ela se for candidata
+                    #Se sim ele deve instalar a medida
                     plano.at[Permutacao[i],"instalado_candidatas"]=1 # senão for ele instala ela se for candidata
                     plano.at[Permutacao[i],"instalado_mod"]=1  # senão for ele instala ela se for candidata
                     if plano.iloc[Permutacao[i]].type==5 & flag==0: # se instalou PMU e antes não tinha ele muda a flag pra 1
                         flag=1
                     startCandidatas=startCandidatas+1
+                    ## e em seguida instlar a medida par dela
+                    mask=(plano.id_MFS==plano.iloc[Permutacao[i]].id_MFS)&(plano.instalado_mod==0) ## encontra posicao do par
+                    instalar=int(np.where(Permutacao==plano[mask].index[0])[0])  # medeida que faz parte do mesmo par                        
+                    permutaMedida(Hfat,Permutacao,instalar,startCandidatas)
+                    plano.at[Permutacao[startCandidatas],"instalado_mod"]=1 # muda o status dela para mod
+                    plano.at[Permutacao[startCandidatas],"instalado_candidatas"]=1 #instala a medida
+                    startCandidatas=startCandidatas+1
                 if plano.iloc[Permutacao[i]].instalado_candidatas==0: # se ela for uma PMU candidata
+                    # se a medida do pivo é uma PMU candidata ele instala a medida
                     plano.at[Permutacao[i],"instalado_candidatas"]=1 # se ela for uma PMU candidata ele instala
                     plano.at[Permutacao[i],"instalado_mod"]=1# se ela for uma PMU candidata ele instala
                     if (plano.iloc[Permutacao[i]].type==5) & (flag==0):  # se instalou PMU e antes não tinha ele muda a flag pra 1
                         flag=1
-                    offset=startPMUS
-                    for k in range(offset,len(plano)): # atualiza todas as medidas daquela PMU para MFS candidatas
-                        if plano.iloc[Permutacao[k]].i_de==plano.iloc[Permutacao[i]].i_de: # se a medida está na mesma barra
-                            plano.at[Permutacao[k],"instalado_candidatas"]=2 # muda o status para candidata
-                            permutaMedida(Hfat,Permutacao,k,startPMUS)
-
-                        startPMUS=startPMUS+1 # incrementa o identificador de onde começam as PMUS
+                    startPMUS=startPMUS+1
                     startCandidatas=startCandidatas+1
+                    # Em seguida ele instala o par dela
+                    mask=(plano.id_MFS==plano.iloc[Permutacao[i]].id_MFS)&(plano.instalado_mod==0) ## encontra posicao do par
+                    instalar=int(np.where(Permutacao==plano[mask].index[0])[0])  # medeida que faz parte do mesmo par                        
+                    permutaMedida(Hfat,Permutacao,instalar,startCandidatas)
+                    plano.at[Permutacao[startCandidatas],"instalado_mod"]=1 # muda o status dela para mod
+                    plano.at[Permutacao[startCandidatas],"instalado_candidatas"]=1 #instala a medida
+                    startPMUS=startPMUS+1
+                    startCandidatas=startCandidatas+1
+                    # Depois ele passa as outras na mesma barra para candidatas 
+                    for idx,row in plano[mask3].iterrows():
+                        plano.at[idx,"instalado_candidatas"]=2
+                        mask=(plano.id_MFS==plano.iloc[Permutacao[i]].id_MFS)&(plano.instalado==0) ## encontra posicao do par
+                        instalar=int(np.where(Permutacao==idx)[0])
+                        permutaMedida(Hfat,Permutacao,instalar,startPMUS)
+                        startPMUS=startPMUS+1 
         if np.abs(Hfat[i][i])<tolpiv:
             # se for ele procura a próxima medida com pivo não nulo
             for j in range(i+1,len(plano)):
-
                 if np.abs(Hfat[i][j])>tolpiv: # se o pivo é não nulo
-                    
                     permutaMedida(Hfat,Permutacao,i,j) # permuta a medida i com j, j dá a informcao
-
-
                     ## Depois daqui o i guarda a posicao da medida permutada e o j da medida que estava na posicao anteriormente
                     if plano.iloc[Permutacao[i]].instalado_candidatas==2: #verifica se a medida permutada era candidata
                         plano.at[Permutacao[i],"instalado_mod"]=1 # muda o status dela para mod
@@ -148,45 +163,52 @@ def fatoraH(HT,graph,ind):
                             permutaMedida(Hfat,Permutacao,j,startCandidatas)
                         #instala a medida no topo
                         startCandidatas=startCandidatas+1 # incrementa o identificador de onde começam as MFS_candidatas
-                        mask=(plano.id_MFS==plano.iloc[Permutacao[i]].id_MFS)&(plano.instalado==0) ## encontra posicao do par
-                        instalar=int(Permutacao[Permutacao==plano[mask].index[0]]) # medeida que faz parte do mesmo par                        
+                        mask=(plano.id_MFS==plano.iloc[Permutacao[i]].id_MFS)&(plano.instalado_mod==0) ## encontra posicao do par
+                        instalar=int(np.where(Permutacao==plano[mask].index[0])[0]) # medeida que faz parte do mesmo par                        
                         permutaMedida(Hfat,Permutacao,instalar,startCandidatas)
                         plano.at[Permutacao[startCandidatas],"instalado_mod"]=1 # muda o status dela para mod
                         plano.at[Permutacao[startCandidatas],"instalado_candidatas"]=1 #instala a medida
                         startCandidatas=startCandidatas+1 # incrementa o identificador de onde começam as MFS_candidatas
-                        ##DEVE SER ISSO DAQUI, AGORA FALTA FAZER PARA PMU CANDIDATA
                     elif plano.iloc[Permutacao[i]].instalado_candidatas==0: # se precisou de 1 PMU candidata 
                         plano.at[Permutacao[i],"instalado_mod"]=1 #muda o status das medidas
                         plano.at[Permutacao[i],"instalado_candidatas"]=1
                         if (plano.iloc[Permutacao[i]].type==5) & (flag==0):
                             flag=1
-                        if plano.iloc[Permutacao[j]].instalado_candidatas==1: # se a medida é instalada ela tem q ir pro topo
+                        if (plano.iloc[Permutacao[j]].instalado_candidatas==1) & (startCandidatas < startPMUS): # se a medida é instalada ela tem q ir pro topo    
                             permutaMedida(Hfat,Permutacao,j,startCandidatas) #manda pro topo das candidatas e o topo das candidatas pras PMUs
                             startCandidatas=startCandidatas+1 # incrementa o identificador de onde começam as PMUS
                             permutaMedida(Hfat,Permutacao,j,startPMUS) # manda a medida que está no start candidatas pro start PMUS
-                            startPMUS=startPMUS+1 # incrementa o identificador de onde começam as PMUS
-                        if plano.iloc[Permutacao[j]].instalado_candidatas==2: # se a medida é instalada ela tem q ir pro topo
+                            startPMUS=startPMUS+1 # incrementa o identificador de onde começam as PMUS                        
+                        elif plano.iloc[Permutacao[j]].instalado_candidatas==2 & (startCandidatas < startPMUS): # se a medida é instalada ela tem q ir pro topo
                             permutaMedida(Hfat,Permutacao,j,startPMUS)
-                            startPMUS=startPMUS+1 # incrementa o identificador de onde começam as PMUS   
+                            startPMUS=startPMUS+1 # incrementa o identificador de onde começam as PMUS  
+                        elif (plano.iloc[Permutacao[j]].instalado_candidatas==1)& (startCandidatas == startPMUS):
+                            permutaMedida(Hfat,Permutacao,j,startCandidatas)
+                            startCandidatas=startCandidatas+1
+                            startPMUS=startPMUS+1
 
-                        mask=(plano.id_MFS==plano.iloc[Permutacao[i]].id_MFS)&(plano.instalado==0)
-                        instalar=int(Permutacao[Permutacao==plano[mask].index[0]])
+                        #pega medida par e coloca no conjunto das instaladas
+                        mask=(plano.id_MFS==plano.iloc[Permutacao[i]].id_MFS)&(plano.instalado_mod==0)
+                        instalar=int(np.where(Permutacao==plano[mask].index[0])[0])
                         permutaMedida(Hfat,Permutacao,instalar,startCandidatas)
                         plano.at[Permutacao[startCandidatas],"instalado_mod"]=1 # muda o status dela para mod
                         plano.at[Permutacao[startCandidatas],"instalado_candidatas"]=1 #instala a medida
-                        startCandidatas=startCandidatas+1 # incrementa o identificador de onde começam as MFS_candidatas
-                        permutaMedida(Hfat,Permutacao,instalar,startPMUS)
-                        startPMUS=startPMUS+1 # incrementa o identificador de onde começam as PMUS
-                        
-                        ##Ok agora deve estar certo PArei aqui
-                        offset=startPMUS
-                        for k in range(offset,len(plano)): # atualiza todas as medidas daquela PMU para MFS
-                            if plano.iloc[Permutacao[k]].i_de==plano.iloc[Permutacao[i]].i_de: # se a medida está na mesma barra
-                               plano.at[Permutacao[k],"instalado_candidatas"]=2 # muda o status para candidata
-                               permutaMedida(Hfat,Permutacao,k,startPMUS)
-                               startPMUS=startPMUS+1 # incrementa o identificador de onde começam as PMUS
-                            #muda o status de todas as outras medidas na mesma barra para candidata
-                            #reordena a Ht e o plano para elas virem primeiro
+                        if startCandidatas < startPMUS:
+                            startCandidatas=startCandidatas+1 # incrementa o identificador de onde começam as MFS_candidatas
+                            permutaMedida(Hfat,Permutacao,instalar,startPMUS)
+                            startPMUS=startPMUS+1 # incrementa o identificador de onde começam as PMUS
+                        else:
+                            startCandidatas=startCandidatas+1 
+                            startPMUS=startPMUS+1
+
+                        mask3=(plano["instalado_candidatas"]==0) & (plano.i_de==plano.iloc[Permutacao[i]].i_de)
+                        #novo modo de instalar candidatas procurando apenas no pandas, deve dar agilidade ao código
+                        for idx,row in plano[mask3].iterrows():
+                            plano.at[idx,"instalado_candidatas"]=2
+                            mask=(plano.id_MFS==plano.iloc[Permutacao[i]].id_MFS)&(plano.instalado_mod==0) ## encontra posicao do par
+                            instalar=int(np.where(Permutacao==idx)[0]) # medeida que faz parte do mesmo par                        
+                            permutaMedida(Hfat,Permutacao,instalar,startPMUS)
+                            startPMUS=startPMUS+1 
                     break
         Hfat[i,:]=Hfat[i,:]/Hfat[i][i]
         for j in range(i+1,len(graph)):
@@ -214,10 +236,24 @@ def fatoraH(HT,graph,ind):
 
     ## verifica PMUs instaladas no conjunto básico
     PMUsInstaladas=list(set(plano.iloc[Permutacao[0:len(graph)-1+flag]].i_de.tolist()))
+    ## Ids das medidas basicas
 
+    IDF_MFSbasicos=list(set(plano.iloc[Permutacao[0:len(graph)-1+flag]].id_MFS.tolist()))
+    
+    ## Medida existente
+
+
+
+
+    plano.iloc[Permutacao[len(graph)-1+flag:]].existente.isin(IDF_MFSbasicos)
+    
     #
-    mask1=plano.iloc[Permutacao[len(graph)-1+flag:]].i_de.isin(PMUsInstaladas) #Se a medida não está no conjunto básico mas está em uma barra com PMU
-    mask1=(~(plano.de !=-999) )| mask1 # ela é considera candidata
+    maskPMUs=plano.iloc[Permutacao[len(graph)-1+flag:]].i_de.isin(PMUsInstaladas) #Se a medida não está no conjunto básico mas está em uma barra com PMU
+    maskIDs=plano.iloc[Permutacao[len(graph)-1+flag:]].id_MFS.isin(IDF_MFSbasicos) # Se a medida é par de uma que foi instalada
+    maskExisente=plano.existente==1 # se a medida é existente
+
+    mask1= (maskPMUs) & (~maskIDs)& (~maskExisente) # se ela pertence a uma PMU, não faz par com uma básica e não é existente
+    mask1=(~(plano.de !=-999) )| mask1 # ela é considera candidata e não instalada
 
     plano.loc[mask1,"instalado_candidatas"]=2 # todas essas medidas são candidatas
     plano.loc[mask1,"instalado_mod"]=0 #e não estão instaladas
@@ -227,41 +263,50 @@ def fatoraH(HT,graph,ind):
    
     
 
-    mask2=~plano.iloc[Permutacao[len(graph)-1+flag:]].i_de.isin(PMUsInstaladas) #SE a medida não está no conjunto básico nem a barra dela está com PMUs
-    mask2=(~(plano.de !=-999) )| mask2
+    maskPMUs=~plano.iloc[Permutacao[len(graph)-1+flag:]].i_de.isin(PMUsInstaladas) #SE a medida não está no conjunto básico nem a barra dela está com PMUs
+    maskIDs=plano.iloc[Permutacao[len(graph)-1+flag:]].id_MFS.isin(IDF_MFSbasicos) #Se a medida é par de uma básica
+    maskExisente=plano.existente==1 # se a medida é existente
+    
+    mask2= (maskPMUs) & ~(maskIDs) & (~maskExisente)  # se ela não pertence a uma PMU, não faz par com uma básica e não é existente 
+    mask2=(~(plano.de !=-999) )| mask2 # ela será desinstalada
 
     plano.loc[mask2,"instalado_candidatas"]=0 # ela passa a ser PMU candidata
     plano.loc[mask2,"instalado_mod"]=0 #desisntala todas
 
+
     #reordena o plano 
     plano.loc[Permutacao,"order_after_observa"]=list(range(len(Permutacao))) #ordem da permutacao
 
-    plano=plano.sort_values("order_after_observa") #reordena o plano de acordo com a permutacao
+    #reordena o plano de acordo com a permutacao
  
     sort_order = {1: 0, 2: 1, 0: 2} #atribui novamente o sort_order 
     plano["sort_order_observabilidade"]=plano["instalado_candidatas"].map(sort_order) # ordena o DMED 
-    plano=plano.sort_values("sort_order_observabilidade",kind="stable")# retordena o plano de acordo com a prioridade de maneira "stable" ou seja, não altera a ordem se não precisar
+    
+    
+    plano2=plano.sort_values(by=["sort_order_observabilidade","order_after_observa"],kind="stable",ignore_index=0)# retordena o plano de acordo com a prioridade de maneira "stable" ou seja, não altera a ordem se não precisar
+    
+    
+    Permutacao_depois_Observabilidade=plano2.order_after_observa.to_list()
+
+    del plano2
 
     # aqui está errado o vetor permutacao depois da observabilidade 
-    Permutacao_depois_Observabilidade=plano["order_after_observa"].tolist() #obtem uma nova lista de permutacoes para reordenar a matriz
     # esse vetor pode ser utilizado para reordenar a matriz e 
     # o próprio vetor plano para fazer a referencia a medida original
 
     Hfat2=reorder_columns(Hfat,Permutacao_depois_Observabilidade) # reordena a matriz de acordo com o permutacao
     Permutacao=np.array(Permutacao) 
-    Permutacao_depois_Observabilidade=Permutacao[Permutacao_depois_Observabilidade] # reordena o permutacao para corresponder a ordem inicial do plano, ou seja o coneteúdo da posicao i faz referencia ao indice do elemento no plano
+    Permutacao_depois_Observabilidade=np.array(Permutacao[Permutacao_depois_Observabilidade]) # reordena o permutacao para corresponder a ordem inicial do plano, ou seja o coneteúdo da posicao i faz referencia ao indice do elemento no plano
 
     # Permutacao_depois_Observabilidade tem a ordem dos indices originaais do plano
 
 
 
-
+    ##----------------Desinstala medidas ok-----------------
 
 
     #preenche o número de medidas candidatas
-        
-    nMFS=sum(plano["instalado_mod"])
-    ind.nMFS_instaladas=nMFS
+
     ncadidatas=len(plano[plano["instalado_candidatas"]==2])
     nPMUscandidatas=len(plano[plano["instalado_candidatas"]==0])
     
@@ -282,21 +327,18 @@ def fatoraH(HT,graph,ind):
             nMCs=nMCs+1
 
 
-
-
+    ## Resultados de saída das MCs
     ind.nMCs=nMCs
-    ind.nPMUs_instaladas=ind.nPMUs_instaladas+nPMUSadicionadas
-    ind.nMFS_instaladas=ind.nMFS_instaladas+nMFSadicioanadas
     ind.calcula_custo()
 
+    
+    
     ind.lista_observavel=plano.iloc[plano["Oorder_DPFMSE"].sort_values().index]["instalado_mod"].array
 
     #rotina para gerar plano não critico
     if nMCs>0:
         plano_nc=plano.copy()
         inv_nao_critico=individuo(plano_nc,ind.lista_observavel)
-        inv_nao_critico.nMFS_instaladas=ind.nMFS_instaladas
-        inv_nao_critico.nPMUs_instaladas=ind.nPMUs_instaladas
     else:
         return
 
@@ -310,7 +352,7 @@ def fatoraH(HT,graph,ind):
 
 
 
-    
+    ###
     m=0
     for MC in varMC:
         i=MC    
@@ -321,17 +363,30 @@ def fatoraH(HT,graph,ind):
                 if (Hfat2[i][j]>0) & (j<startPMUS):
                     plano_nc.at[Permutacao_nc[j],"instalado_candidatas"]=1 # instala a medida no plano se a medida for candidata
                     plano_nc.at[Permutacao_nc[j],"instalado_mod"]=1 # instala a medida no plano se a medida for candidata
-                    inv_nao_critico.nMFS_instaladas=inv_nao_critico.nMFS_instaladas+1
                     Hinstaladas_n=np.concatenate((Hinstaladas_n,np.array(Hfat[:,j]).reshape(-1,1)),axis=1)
+                    ##instala o par dela
+                    mask=(plano_nc.id_MFS==plano_nc.iloc[Permutacao_nc[j]].id_MFS)&(plano_nc.instalado_mod==0) ## encontra posicao do par
+                    instalar=int(np.where(Permutacao_nc==plano_nc[mask].index[0])[0]) # medeida que faz parte do mesmo par                        
+                    plano_nc.at[Permutacao_nc[instalar],"instalado_mod"]=1 # muda o status dela para mod
+                    plano_nc.at[Permutacao_nc[instalar],"instalado_candidatas"]=1 #instala a medida
+                    Hinstaladas_n=np.concatenate((Hinstaladas_n,np.array(Hfat[:,instalar]).reshape(-1,1)),axis=1)
                     break
                 elif (Hfat2[i][j]>0):
                     plano_nc.at[Permutacao_nc[j],"instalado_candidatas"]=1 # se for PMU candidata ele instala
-                    plano_nc.at[Permutacao_nc[j],"instalado_mod"]=1
-                    inv_nao_critico.nPMUs_instaladas=inv_nao_critico.nPMUs_instaladas+1
-                    inv_nao_critico.nMFS_instaladas=inv_nao_critico.nMFS_instaladas+1
+                    plano_nc.at[Permutacao_nc[j],"instalado_mod"]=1       
+
                     Hinstaladas_n=np.concatenate((Hinstaladas_n,np.array(Hfat2[:,j]).reshape(-1,1)),axis=1)
+                    
+                    mask=(plano_nc.id_MFS==plano_nc.iloc[Permutacao_nc[j]].id_MFS)&(plano_nc.instalado_mod==0) ## encontra posicao do par
                     permutaMedida(Hfat2,Permutacao_nc,j,startPMUS)
                     startPMUS=startPMUS+1 # incrementa o identificador de onde começam as PMUS
+                    instalar=int(np.where(Permutacao_nc==plano_nc[mask].index[0])[0]) # medeida que faz parte do mesmo par                        
+                    plano_nc.at[Permutacao_nc[instalar],"instalado_mod"]=1 # muda o status dela para mod
+                    plano_nc.at[Permutacao_nc[instalar],"instalado_candidatas"]=1 #instala a medida
+                    Hinstaladas_n=np.concatenate((Hinstaladas_n,np.array(Hfat2[:,instalar]).reshape(-1,1)),axis=1)
+                    permutaMedida(Hfat2,Permutacao_nc,instalar,startPMUS)
+                    startPMUS=startPMUS+1
+                    #coloca nas medidas basicas, mas eu sempre verifico na matriz Hinstaladas, se uma medida instalada previamente já resolveu
                     offset=startPMUS
                     for k in range(offset,len(plano_nc)): # atualiza todas as medidas daquela PMU para MFS
                         if plano_nc.iloc[Permutacao_nc[k]].i_de==plano_nc.iloc[Permutacao_nc[i]].i_de: # se a medida está na mesma barra
